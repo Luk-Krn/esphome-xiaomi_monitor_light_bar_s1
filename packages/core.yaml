@@ -152,7 +152,7 @@ sensor:
     on_short_press:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "short_press"
           - if:
@@ -165,7 +165,7 @@ sensor:
     on_long_press:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "long_press"
           - if:
@@ -177,7 +177,7 @@ sensor:
     on_rotate_left:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "rotate_left"
               data_template:
@@ -202,7 +202,7 @@ sensor:
     on_rotate_right:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "rotate_right"
               data_template:
@@ -223,7 +223,7 @@ sensor:
     on_rotate_left_pressed:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "rotate_left_pressed"
               data_template:
@@ -244,7 +244,7 @@ sensor:
     on_rotate_right_pressed:
       - then:
           - homeassistant.event:
-              event: xiaomi_knob_action
+              event: esphome.xiaomi_knob_action
               data:
                 action: "rotate_right_pressed"
               data_template:
