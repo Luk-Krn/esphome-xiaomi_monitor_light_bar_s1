@@ -123,6 +123,19 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
     icon: "mdi:knob"
 
+event:
+  - platform: template
+    name: "Knob Action"
+    id: knob_action
+    icon: "mdi:gesture-tap-button"
+    event_types: # Each event in ESPHome needs to be configured with a list of event types it can trigger
+      - short_press
+      - long_press
+      - rotate_left
+      - rotate_right
+      - rotate_left_pressed
+      - rotate_right_pressed
+
 light:
   - platform: cwww
     id: light1
@@ -151,10 +164,9 @@ sensor:
     
     on_short_press:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "short_press"
+          - event.trigger: # Triggers the event entity in Home Assistant
+              id: knob_action
+              event_type: short_press
           - if:
               condition:
                 switch.is_on: local_knob_control
@@ -164,10 +176,9 @@ sensor:
 
     on_long_press:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "long_press"
+          - event.trigger:
+              id: knob_action
+              event_type: long_press
           - if:
               condition:
                 switch.is_on: local_knob_control
@@ -176,12 +187,9 @@ sensor:
 
     on_rotate_left:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "rotate_left"
-              data_template:
-                steps: !lambda 'return to_string(x);'
+          - event.trigger:
+              id: knob_action
+              event_type: rotate_left
           - if:
               condition:
                 and:
@@ -201,12 +209,9 @@ sensor:
 
     on_rotate_right:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "rotate_right"
-              data_template:
-                steps: !lambda 'return to_string(x);'
+          - event.trigger:
+              id: knob_action
+              event_type: rotate_right
           - if:
               condition:
                 and:
@@ -222,12 +227,9 @@ sensor:
 
     on_rotate_left_pressed:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "rotate_left_pressed"
-              data_template:
-                steps: !lambda 'return to_string(x);'
+          - event.trigger:
+              id: knob_action
+              event_type: rotate_left_pressed
           - if:
               condition:
                 switch.is_on: local_knob_control
@@ -243,12 +245,9 @@ sensor:
 
     on_rotate_right_pressed:
       - then:
-          - homeassistant.event:
-              event: esphome.xiaomi_knob_action
-              data:
-                action: "rotate_right_pressed"
-              data_template:
-                steps: !lambda 'return to_string(x);'
+          - event.trigger:
+              id: knob_action
+              event_type: rotate_right_pressed
           - if:
               condition:
                 switch.is_on: local_knob_control
