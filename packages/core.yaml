@@ -115,6 +115,14 @@ output:
                 id: gpio_ww
                 level: 0
 
+switch:
+  - platform: template
+    name: "Local Knob Control"
+    id: local_knob_control
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    icon: "mdi:knob"
+
 light:
   - platform: cwww
     id: light1
@@ -140,20 +148,45 @@ sensor:
     mac_address: ${dimmer_mac_address}
     bindkey: ${dimmer_bindkey}
     product_id: 0x15CE
+    
     on_short_press:
       - then:
-          - light.toggle:
-              id: light1
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "short_press"
+          - if:
+              condition:
+                switch.is_on: local_knob_control
+              then:
+                - light.toggle:
+                    id: light1
 
     on_long_press:
       - then:
-          - logger.log: "knob was long pressed - no preset cycling configured (use generated presets or include original-presets.yaml)"
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "long_press"
+          - if:
+              condition:
+                switch.is_on: local_knob_control
+              then:
+                - logger.log: "knob was long pressed - no preset cycling configured"
 
     on_rotate_left:
       - then:
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "rotate_left"
+              data_template:
+                steps: !lambda 'return to_string(x);'
           - if:
               condition:
-                light.is_on: light1
+                and:
+                  - switch.is_on: local_knob_control
+                  - light.is_on: light1
               then:
                 - lambda: |-
                     float min_brightness = 0.07;
@@ -164,39 +197,68 @@ sensor:
                     call.set_brightness(new_brightness);
                     call.perform();
               else:
-                - logger.log: Light is off, not adjusting brightness
+                - logger.log: "Light is off or local control disabled, not adjusting brightness"
+
     on_rotate_right:
       - then:
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "rotate_right"
+              data_template:
+                steps: !lambda 'return to_string(x);'
           - if:
               condition:
-                light.is_on: light1
+                and:
+                  - switch.is_on: local_knob_control
+                  - light.is_on: light1
               then:
                 - light.dim_relative:
                     id: light1
                     relative_brightness: !lambda |-
                       return x*2 / 100.0;
               else:
-                - logger.log: Light is off, not adjusting brightness
+                - logger.log: "Light is off or local control disabled, not adjusting brightness"
 
     on_rotate_left_pressed:
       - then:
-          - lambda: |-
-              auto min_temp = id(light1).get_traits().get_min_mireds();
-              auto max_temp = id(light1).get_traits().get_max_mireds();
-              auto cur_temp = id(light1).current_values.get_color_temperature();
-              auto new_temp = max(min_temp, min(max_temp, cur_temp + (x*10)));
-              auto call = id(light1).turn_on();
-              call.set_color_temperature(new_temp);
-              call.perform();
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "rotate_left_pressed"
+              data_template:
+                steps: !lambda 'return to_string(x);'
+          - if:
+              condition:
+                switch.is_on: local_knob_control
+              then:
+                - lambda: |-
+                    auto min_temp = id(light1).get_traits().get_min_mireds();
+                    auto max_temp = id(light1).get_traits().get_max_mireds();
+                    auto cur_temp = id(light1).current_values.get_color_temperature();
+                    auto new_temp = max(min_temp, min(max_temp, cur_temp + (x*10)));
+                    auto call = id(light1).turn_on();
+                    call.set_color_temperature(new_temp);
+                    call.perform();
 
     on_rotate_right_pressed:
       - then:
-          - lambda: |-
-              auto min_temp = id(light1).get_traits().get_min_mireds();
-              auto max_temp = id(light1).get_traits().get_max_mireds();
-              auto cur_temp = id(light1).current_values.get_color_temperature();
-              auto new_temp = max(min_temp, min(max_temp, cur_temp - (x*10)));
-              auto call = id(light1).turn_on();
-              call.set_color_temperature(new_temp);
-              call.perform();
+          - homeassistant.event:
+              event: xiaomi_knob_action
+              data:
+                action: "rotate_right_pressed"
+              data_template:
+                steps: !lambda 'return to_string(x);'
+          - if:
+              condition:
+                switch.is_on: local_knob_control
+              then:
+                - lambda: |-
+                    auto min_temp = id(light1).get_traits().get_min_mireds();
+                    auto max_temp = id(light1).get_traits().get_max_mireds();
+                    auto cur_temp = id(light1).current_values.get_color_temperature();
+                    auto new_temp = max(min_temp, min(max_temp, cur_temp - (x*10)));
+                    auto call = id(light1).turn_on();
+                    call.set_color_temperature(new_temp);
+                    call.perform();
 
